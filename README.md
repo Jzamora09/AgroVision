@@ -1,34 +1,60 @@
-# React + TypeScript + Vite
+# 🌱 AgroVision
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Sistema inteligente para la detección y clasificación de enfermedades en cultivos mediante procesamiento digital de imágenes.
 
-Currently, two official plugins are available:
+## 📋 Descripción
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+AgroVision es una plataforma web desarrollada como proyecto de graduación para apoyar al sector agroindustrial mediante el uso de procesamiento digital de imágenes e inteligencia artificial.
 
-## React Compiler
+El sistema está compuesto por dos módulos principales:
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+- 🤖 **Módulo Inteligente de Detección de Enfermedades**
+  - Análisis de imágenes de cultivos.
+  - Clasificación automática de enfermedades.
+  - Procesamiento de imágenes con OpenCV.
 
-Note: This will impact Vite dev & build performances.
+- 📊 **Módulo de Reportes y Análisis**
+  - Gestión de cultivos.
+  - Reportes estadísticos.
+  - Métricas.
+  - Predicciones.
+  - Recomendaciones para futuras cosechas.
 
-## Expanding the Oxlint configuration
+---
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## 🚀 Tecnologías
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+### Frontend
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+- React
+- Vite
+- TypeScript
+- Tailwind CSS
+
+### Backend
+
+- Python
+- FastAPI
+
+### Base de Datos
+
+- Supabase
+- PostgreSQL
+
+### Inteligencia Artificial
+
+- OpenCV
+- Scikit-Learn
+
+---
+
+## 👥 Integrantes
+
+- Jorge Luis De La Rosa Zamora
+- Pendiente
+
+---
+
+## 📌 Estado del Proyecto
+
+🚧 En desarrollo.
