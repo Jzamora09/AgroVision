@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 
 import Sidebar from "../components/sidebar/Sidebar";
+import { Topbar } from "../components/topbar";
 import { useSidebar } from "../context/SidebarContext";
 
 export default function DashboardLayout() {
@@ -18,9 +19,12 @@ export default function DashboardLayout() {
           marginLeft: collapsed ? 90 : 280,
         }}
       >
-        <div className="min-h-screen p-8">
+        <Topbar />
+
+        <div className="p-8">
           <Outlet />
         </div>
+
       </main>
 
     </div>
