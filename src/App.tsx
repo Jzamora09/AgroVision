@@ -1,32 +1,10 @@
-import { useEffect } from "react";
-import { supabase } from "./lib/supabase";
+import AppRouter from "./app/router/AppRouter";
+import { SidebarProvider } from "./app/context/SidebarContext";
 
-const App = () => {
-
-  useEffect(() => {
-
-    const test = async () => {
-
-      const { data, error } =
-        await supabase.auth.getSession();
-
-      console.log(data);
-
-      console.log(error);
-
-    };
-
-    test();
-
-  }, []);
-
+export default function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <h1 className="text-5xl font-bold text-green-600">
-        🌱 AgroVision
-      </h1>
-    </div>
+    <SidebarProvider>
+      <AppRouter />
+    </SidebarProvider>
   );
-};
-
-export default App;
+}

@@ -10,8 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@rolldown/binding-win32-x64-msvc": "^1.2.0",
     "@supabase/supabase-js": "^2.110.9",
     "@tailwindcss/vite": "^4.3.3",
+    "framer-motion": "^12.42.2",
+    "lucide-react": "^1.27.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.82.0",

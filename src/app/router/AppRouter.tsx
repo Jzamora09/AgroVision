@@ -8,6 +8,8 @@ import DetectionPage from "../../modules/disease-detection/pages/DetectionPage";
 import ReportsPage from "../../modules/reports/pages/ReportsPage";
 import ProfilePage from "../../modules/profile/pages/ProfilePage";
 
+import DashboardLayout from "../layouts/DashboardLayout";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -17,25 +19,32 @@ const router = createBrowserRouter([
     path: "/register",
     element: <RegisterPage />,
   },
+
+  // Rutas que compartirán el Sidebar
   {
-    path: "/dashboard",
-    element: <DashboardPage />,
-  },
-  {
-    path: "/cultivos",
-    element: <CropsPage />,
-  },
-  {
-    path: "/deteccion",
-    element: <DetectionPage />,
-  },
-  {
-    path: "/reportes",
-    element: <ReportsPage />,
-  },
-  {
-    path: "/perfil",
-    element: <ProfilePage />,
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: "/dashboard",
+        element: <DashboardPage />,
+      },
+      {
+        path: "/cultivos",
+        element: <CropsPage />,
+      },
+      {
+        path: "/deteccion",
+        element: <DetectionPage />,
+      },
+      {
+        path: "/reportes",
+        element: <ReportsPage />,
+      },
+      {
+        path: "/perfil",
+        element: <ProfilePage />,
+      },
+    ],
   },
 ]);
 
