@@ -14,15 +14,14 @@ import ReportsPage from "../../modules/reports/pages/ReportsPage";
 import ProfilePage from "../../modules/profile/pages/ProfilePage";
 
 import DashboardLayout from "../layouts/DashboardLayout";
+import ProtectedRoute from "./ProtectedRoute";
 
 const router = createBrowserRouter([
-  // Redirección inicial
   {
     path: "/",
     element: <Navigate to="/login" replace />,
   },
 
-  // Autenticación
   {
     path: "/login",
     element: <LoginPage />,
@@ -32,9 +31,12 @@ const router = createBrowserRouter([
     element: <RegisterPage />,
   },
 
-  // Dashboard
   {
-    element: <DashboardLayout />,
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "/dashboard",
@@ -59,15 +61,12 @@ const router = createBrowserRouter([
     ],
   },
 
-  // Ruta no encontrada
   {
     path: "*",
     element: <Navigate to="/login" replace />,
   },
 ]);
 
-const AppRouter = () => {
+export default function AppRouter() {
   return <RouterProvider router={router} />;
-};
-
-export default AppRouter;
+}

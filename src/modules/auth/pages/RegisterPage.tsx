@@ -3,12 +3,19 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { registerUser } from "../services/authService";
 
+import {
+  validateName,
+  validateEmail,
+  validatePassword,
+} from "../utils/validation";
+
 import AuthImage from "../components/AuthImage";
 import AuthLogo from "../components/AuthLogo";
 import AuthCard from "../components/AuthCard";
 import AuthInput from "../components/AuthInput";
 import PasswordInput from "../components/PasswordInput";
 import AuthButton from "../components/AuthButton";
+
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -18,15 +25,40 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
   const handleRegister = async () => {
-    if (!fullName || !email || !password || !confirmPassword) {
-      alert("Completa todos los campos.");
+    setNameError("");
+    setEmailError("");
+    setPasswordError("");
+    setConfirmPasswordError("");
+
+    const nameValidation = validateName(fullName);
+
+    if (!nameValidation.valid) {
+      setNameError(nameValidation.message);
+      return;
+    }
+
+    const emailValidation = validateEmail(email);
+
+    if (!emailValidation.valid) {
+      setEmailError(emailValidation.message);
+      return;
+    }
+
+    const passwordValidation = validatePassword(password);
+
+    if (!passwordValidation.valid) {
+      setPasswordError(passwordValidation.message);
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Las contraseñas no coinciden.");
+      setConfirmPasswordError("Las contraseñas no coinciden.");
       return;
     }
 
@@ -34,18 +66,20 @@ export default function RegisterPage() {
       setLoading(true);
 
       await registerUser({
-        fullName,
-        email,
+        fullName: fullName.trim(),
+        email: email.trim().toLowerCase(),
         password,
       });
 
-      alert(
-        "Cuenta creada correctamente. Revisa tu correo para confirmar tu cuenta."
-      );
+      alert("Cuenta creada correctamente.");
 
       navigate("/login");
     } catch (error: any) {
-      alert(error.message);
+      if (error.message.includes("already registered")) {
+        setEmailError("Ya existe una cuenta con este correo.");
+      } else {
+        alert(error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -69,33 +103,48 @@ export default function RegisterPage() {
                 Regístrate para comenzar a utilizar AgroVision.
               </p>
 
-              <AuthInput
-                label="Nombre completo"
-                placeholder="Juan Pérez"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-              />
+            <AuthInput
+              label="Nombre completo"
+              placeholder="Juan Pérez"
+              value={fullName}
+              onChange={(e) => {
+                setFullName(e.target.value);
+                setNameError("");
+              }}
+              error={nameError}
+            />
 
               <AuthInput
                 label="Correo electrónico"
                 type="email"
                 placeholder="correo@ejemplo.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setEmailError("");
+                }}
+                error={emailError}
               />
-
               <PasswordInput
                 label="Contraseña"
                 placeholder="********"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setPasswordError("");
+                }}
+                error={passwordError}
               />
 
               <PasswordInput
                 label="Confirmar contraseña"
                 placeholder="********"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setConfirmPasswordError("");
+                }}
+                error={confirmPasswordError}
               />
 
               <AuthButton

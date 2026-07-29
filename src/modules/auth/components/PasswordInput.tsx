@@ -3,10 +3,12 @@ import { Eye, EyeOff } from "lucide-react";
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
+  error?: string;
 }
 
 export default function PasswordInput({
   label,
+  error,
   ...props
 }: Props) {
   const [show, setShow] = useState(false);
@@ -21,20 +23,21 @@ export default function PasswordInput({
         <input
           {...props}
           type={show ? "text" : "password"}
-          className="
+          className={`
             w-full
             rounded-xl
             border
-            border-slate-300
             px-4
             py-3
             pr-12
             outline-none
             transition
-            focus:border-green-500
-            focus:ring-2
-            focus:ring-green-200
-          "
+            ${
+              error
+                ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200"
+                : "border-slate-300 focus:border-green-500 focus:ring-2 focus:ring-green-200"
+            }
+          `}
         />
 
         <button
@@ -45,6 +48,12 @@ export default function PasswordInput({
           {show ? <EyeOff size={20} /> : <Eye size={20} />}
         </button>
       </div>
+
+      {error && (
+        <p className="mt-2 text-sm text-red-600">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
