@@ -1,7 +1,12 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 
 import LoginPage from "../../modules/auth/pages/LoginPage";
 import RegisterPage from "../../modules/auth/pages/RegisterPage";
+
 import DashboardPage from "../../modules/dashboard/pages/DashboardPage";
 import CropsPage from "../../modules/crops/pages/CropsPage";
 import DetectionPage from "../../modules/disease-detection/pages/DetectionPage";
@@ -11,8 +16,15 @@ import ProfilePage from "../../modules/profile/pages/ProfilePage";
 import DashboardLayout from "../layouts/DashboardLayout";
 
 const router = createBrowserRouter([
+  // Redirección inicial
   {
     path: "/",
+    element: <Navigate to="/login" replace />,
+  },
+
+  // Autenticación
+  {
+    path: "/login",
     element: <LoginPage />,
   },
   {
@@ -20,7 +32,7 @@ const router = createBrowserRouter([
     element: <RegisterPage />,
   },
 
-  // Rutas que compartirán el Sidebar
+  // Dashboard
   {
     element: <DashboardLayout />,
     children: [
@@ -46,8 +58,16 @@ const router = createBrowserRouter([
       },
     ],
   },
+
+  // Ruta no encontrada
+  {
+    path: "*",
+    element: <Navigate to="/login" replace />,
+  },
 ]);
 
-export default function AppRouter() {
+const AppRouter = () => {
   return <RouterProvider router={router} />;
-}
+};
+
+export default AppRouter;
