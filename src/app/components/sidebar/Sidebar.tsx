@@ -96,7 +96,7 @@ export default function Sidebar() {
           </nav>
         </div>
 
-        <SidebarFooter collapsed={collapsed} />
+      
       </motion.aside>
     </>
   );

@@ -16,6 +16,8 @@ import AuthInput from "../components/AuthInput";
 import PasswordInput from "../components/PasswordInput";
 import AuthButton from "../components/AuthButton";
 
+import LoadingScreen from "@/components/common/LoadingScreen";
+
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -84,6 +86,13 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+    if (loading) {
+    return (
+      <LoadingScreen
+        message="Creando tu cuenta..."
+      />
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-100">

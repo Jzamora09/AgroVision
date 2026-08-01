@@ -6,6 +6,8 @@ import {
 
 import LoginPage from "../../modules/auth/pages/LoginPage";
 import RegisterPage from "../../modules/auth/pages/RegisterPage";
+import ForgotPasswordPage from "../../modules/auth/pages/ForgotPasswordPage";
+import ResetPasswordPage from "../../modules/auth/pages/ResetPasswordPage"
 
 import DashboardPage from "../../modules/dashboard/pages/DashboardPage";
 import CropsPage from "../../modules/crops/pages/CropsPage";
@@ -29,6 +31,16 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <RegisterPage />,
+  },
+  
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
+  },
+
+    {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
   },
 
   {
@@ -58,6 +70,7 @@ const router = createBrowserRouter([
         path: "/perfil",
         element: <ProfilePage />,
       },
+      
     ],
   },
 

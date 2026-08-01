@@ -10,6 +10,8 @@ import AuthInput from "../components/AuthInput";
 import PasswordInput from "../components/PasswordInput";
 import AuthButton from "../components/AuthButton";
 
+import LoadingScreen from "@/components/common/LoadingScreen";
+
 export default function LoginPage() {
   const navigate = useNavigate();
 
@@ -26,12 +28,15 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      await loginUser({
+    await Promise.all([
+      loginUser({
         email,
         password,
-      });
+      }),
+      new Promise((resolve) => setTimeout(resolve, 1000)),
+    ]);
 
-      alert("Inicio de sesión exitoso.");
+navigate("/dashboard");
 
       navigate("/dashboard");
     } catch (error: any) {
@@ -40,8 +45,15 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
-
+  if (loading) {
+    return (
+      <LoadingScreen
+        message="Iniciando sesión..."
+      />
+    );
+  }
   return (
+    
     <div className="flex min-h-screen bg-slate-100">
       <AuthImage />
 
@@ -81,17 +93,12 @@ export default function LoginPage() {
                   Recordarme
                 </label>
 
-                <button
-                  type="button"
-                  className="
-                    text-sm
-                    font-medium
-                    text-green-600
-                    hover:text-green-700
-                  "
-                >
-                  ¿Olvidaste tu contraseña?
-                </button>
+              <Link
+                to="/forgot-password"
+                className="text-sm font-medium text-green-600 hover:text-green-700"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
               </div>
 
               <AuthButton
