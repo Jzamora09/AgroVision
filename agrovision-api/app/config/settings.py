@@ -11,13 +11,15 @@ class Settings:
 
     # NVIDIA AI
     NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
+
     NVIDIA_BASE_URL = os.getenv(
         "NVIDIA_BASE_URL",
         "https://integrate.api.nvidia.com/v1"
     )
+
     NVIDIA_MODEL = os.getenv(
         "NVIDIA_MODEL",
-        "thinkingmachines/inkling"
+        "meta/llama-3.2-90b-vision-instruct"
     )
 
     # Supabase

@@ -1,3 +1,6 @@
+
+import { useNavigate } from "react-router-dom";
+
 import {
   Bot,
   CalendarDays,
@@ -16,9 +19,11 @@ interface CropCardProps {
   onDelete: (crop: Crop) => void;
 }
 
-const getStatusClasses = (
-  estado: string
-) => {
+// ------------------------------------------
+// ESTILOS SEGÚN ESTADO DEL CULTIVO
+// ------------------------------------------
+
+const getStatusClasses = (estado: string) => {
   switch (estado) {
     case "Con enfermedad":
       return "bg-red-100 text-red-700";
@@ -39,9 +44,25 @@ export default function CropCard({
   onEdit,
   onDelete,
 }: CropCardProps) {
+  const navigate = useNavigate();
+
+  // ------------------------------------------
+  // REDIRIGIR AL MÓDULO DE DETECCIÓN
+  // ------------------------------------------
+
+  const handleAnalyze = () => {
+    const cultivoId = encodeURIComponent(
+      String(crop.id)
+    );
+
+    navigate(`/deteccion?cultivo_id=${cultivoId}`);
+  };
+
   return (
     <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
       <div className="p-6">
+
+        {/* ENCABEZADO */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -68,6 +89,7 @@ export default function CropCard({
           </span>
         </div>
 
+        {/* INFORMACIÓN DEL CULTIVO */}
         <div className="mt-6 grid gap-4 text-sm text-slate-600">
           <div className="flex items-center gap-3">
             <Leaf
@@ -118,12 +140,14 @@ export default function CropCard({
           </div>
         </div>
 
+        {/* DESCRIPCIÓN */}
         {crop.descripcion && (
           <p className="mt-5 border-t border-slate-100 pt-4 text-sm leading-6 text-slate-500">
             {crop.descripcion}
           </p>
         )}
 
+        {/* ANÁLISIS IA */}
         <div className="mt-5 rounded-2xl bg-slate-50 p-4">
           <div className="flex items-center gap-2 font-semibold text-slate-700">
             <Bot
@@ -135,36 +159,44 @@ export default function CropCard({
           </div>
 
           <p className="mt-1 text-sm text-slate-500">
-            Sin análisis todavía.
+            Consulta el módulo de detección para
+            analizar este cultivo.
           </p>
         </div>
 
+        {/* BOTONES DE ACCIÓN */}
         <div className="mt-6 grid grid-cols-[auto_auto_1fr] gap-3">
+
+          {/* EDITAR */}
           <button
             type="button"
             onClick={() => onEdit(crop)}
             title="Editar cultivo"
+            aria-label={`Editar ${crop.nombre}`}
             className="flex h-11 w-12 items-center justify-center rounded-xl bg-blue-600 text-white transition hover:bg-blue-700"
           >
             <Pencil size={18} />
           </button>
 
+          {/* ELIMINAR */}
           <button
             type="button"
             onClick={() => onDelete(crop)}
             title="Eliminar cultivo"
+            aria-label={`Eliminar ${crop.nombre}`}
             className="flex h-11 w-12 items-center justify-center rounded-xl bg-red-600 text-white transition hover:bg-red-700"
           >
             <Trash2 size={18} />
           </button>
 
+          {/* ANALIZAR */}
           <button
             type="button"
-            title="Disponible en el módulo de detección"
+            onClick={handleAnalyze}
+            title={`Analizar ${crop.nombre}`}
             className="flex h-11 items-center justify-center gap-2 rounded-xl bg-green-600 px-4 font-semibold text-white transition hover:bg-green-700"
           >
             <Bot size={18} />
-
             Analizar
           </button>
         </div>

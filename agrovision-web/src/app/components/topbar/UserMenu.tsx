@@ -170,22 +170,7 @@ export default function UserMenu() {
               Mi perfil
             </button>
 
-            <button
-              className="
-                flex
-                w-full
-                items-center
-                gap-3
-                px-5
-                py-4
-                transition
-                hover:bg-slate-100
-              "
-            >
-              <Settings size={20} />
 
-              Configuración
-            </button>
           </div>
 
           <div className="border-t border-slate-200">

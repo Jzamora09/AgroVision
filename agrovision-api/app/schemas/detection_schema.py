@@ -1,14 +1,17 @@
+
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
-# Información del cultivo obtenida desde Supabase
+# Información del cultivo
 class CropInfo(BaseModel):
     nombre: str
     tipo: str
     variedad: str | None = None
 
 
-# Resultado generado por la IA
+# Resultado del análisis
 class PlantAnalysis(BaseModel):
     cultivo_coincide: bool
 
@@ -34,3 +37,12 @@ class DetectionResponse(BaseModel):
     cultivo: CropInfo
     image_path: str
     analysis: PlantAnalysis
+
+    # Identificación del modelo utilizado
+    modelo_utilizado: Literal[
+        "NVIDIA NIM",
+        "Random Forest"
+    ] = "NVIDIA NIM"
+
+    # Indica si se utilizó el respaldo
+    respaldo_activado: bool = False
