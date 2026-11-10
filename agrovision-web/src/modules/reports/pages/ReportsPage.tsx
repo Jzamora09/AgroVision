@@ -1,16 +1,30 @@
 import {
+  useState,
+} from "react";
+
+import {
   BarChart3,
   FileDown,
   FileSpreadsheet,
 } from "lucide-react";
 
 import {
+  CropPrediction,
+  CropRecommendations,
   ReportFilters,
   ReportStats,
   ReportTable,
 } from "../components";
 
 import { useReports } from "../hooks/useReports";
+
+import {
+  generateCropPrediction,
+} from "../services/predictionService";
+
+import type {
+  CropPredictionResult,
+} from "../types/prediction";
 
 import { exportReportToPdf } from "../utils/exportReportPdf";
 import { exportReportToExcel } from "../utils/exportReportExcel";
@@ -26,6 +40,32 @@ export default function ReportsPage() {
     generateReport,
     clearFilters,
   } = useReports();
+
+  const [
+    predictionCropId,
+    setPredictionCropId,
+  ] = useState("");
+
+  const [
+    prediction,
+    setPrediction,
+  ] =
+    useState<CropPredictionResult | null>(
+      null
+    );
+
+  const [
+    predictionLoading,
+    setPredictionLoading,
+  ] = useState(false);
+
+  const [
+    predictionError,
+    setPredictionError,
+  ] =
+    useState<string | null>(
+      null
+    );
 
   const selectedCrop =
     availableCrops.find(
@@ -66,12 +106,53 @@ export default function ReportsPage() {
     });
   };
 
+  const handlePredictionCropChange =
+    (cropId: string) => {
+      setPredictionCropId(
+        cropId
+      );
+
+      setPrediction(null);
+      setPredictionError(null);
+    };
+
+  const handleGeneratePrediction =
+    async () => {
+      if (!predictionCropId) {
+        return;
+      }
+
+      try {
+        setPredictionLoading(true);
+        setPredictionError(null);
+        setPrediction(null);
+
+        const result =
+          await generateCropPrediction(
+            predictionCropId
+          );
+
+        setPrediction(result);
+      } catch (predictionRequestError) {
+        setPredictionError(
+          predictionRequestError instanceof
+            Error
+            ? predictionRequestError.message
+            : "No se pudo generar la predicción."
+        );
+      } finally {
+        setPredictionLoading(false);
+      }
+    };
+
   return (
     <div className="space-y-8">
       <header className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-        <div className="flex items-center gap-3">
+        <div className="agro-page-heading flex items-center gap-3">
           <div className="rounded-2xl bg-green-100 p-3 text-green-700">
-            <BarChart3 size={26} />
+            <BarChart3
+              size={26}
+            />
           </div>
 
           <div>
@@ -80,7 +161,9 @@ export default function ReportsPage() {
             </h1>
 
             <p className="mt-1 text-slate-500">
-              Consulta, analiza y exporta la información de tus cultivos.
+              Consulta, analiza y
+              exporta la información
+              de tus cultivos.
             </p>
           </div>
         </div>
@@ -110,7 +193,9 @@ export default function ReportsPage() {
               disabled:opacity-40
             "
           >
-            <FileDown size={18} />
+            <FileDown
+              size={18}
+            />
 
             Exportar PDF
           </button>
@@ -189,6 +274,36 @@ export default function ReportsPage() {
             />
           </>
         )
+      )}
+
+      <div className="border-t border-slate-200 pt-8">
+        <CropPrediction
+          crops={availableCrops}
+          selectedCropId={
+            predictionCropId
+          }
+          prediction={prediction}
+          loading={
+            predictionLoading
+          }
+          error={
+            predictionError
+          }
+          onCropChange={
+            handlePredictionCropChange
+          }
+          onGenerate={
+            handleGeneratePrediction
+          }
+        />
+      </div>
+
+      {prediction && (
+        <CropRecommendations
+          recommendations={
+            prediction.recommendations
+          }
+        />
       )}
     </div>
   );

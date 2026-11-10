@@ -1,1 +1,158 @@
 @import "tailwindcss";
+
+/* Sistema visual compartido de AgroVision */
+:root {
+  --agro-green: #16a34a;
+  --agro-green-soft: #dcfce7;
+  --agro-ink: #123126;
+}
+
+body {
+  background: #f4f7f5;
+  color: #334155;
+}
+
+/* Mejor contraste en modo claro para textos secundarios */
+html:not(.dark) .text-slate-500 {
+  color: #475d70;
+}
+
+html:not(.dark) .text-slate-400 {
+  color: #5b7080;
+}
+
+html:not(.dark) .text-slate-600 {
+  color: #334e5f;
+}
+
+html.dark body {
+  background: #0b1712;
+  color: #cbd5e1;
+}
+
+html.dark .bg-slate-100 {
+  background-color: #0f2018;
+}
+
+html.dark .bg-slate-50 {
+  background-color: #13251d;
+}
+
+html.dark .bg-white {
+  background-color: #172b22;
+}
+
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-slate-700 {
+  color: #ecfdf5;
+}
+
+html.dark .text-slate-600,
+html.dark .text-slate-500 {
+  color: #a7b8af;
+}
+
+html.dark .text-slate-400 {
+  color: #82958a;
+}
+
+html.dark .border-slate-300,
+html.dark .border-slate-200,
+html.dark .border-slate-100 {
+  border-color: #294638;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  color: #ecfdf5;
+  background-color: #13251d;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #82958a;
+}
+
+.agro-surface {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.055);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.agro-surface:hover {
+  border-color: #86efac;
+  background: linear-gradient(135deg, #ffffff 70%, #f0fdf4 100%);
+  box-shadow:
+    0 0 0 1px rgba(134, 239, 172, 0.45),
+    0 14px 30px rgba(22, 163, 74, 0.13),
+    0 0 24px rgba(74, 222, 128, 0.16);
+}
+
+html.dark .agro-surface {
+  border-color: #294638;
+  background: #172b22;
+}
+
+html.dark .agro-surface:hover {
+  border-color: #4ade80;
+  background: linear-gradient(135deg, #172b22 70%, #183b2a 100%);
+  box-shadow:
+    0 0 0 1px rgba(74, 222, 128, 0.35),
+    0 14px 30px rgba(0, 0, 0, 0.28),
+    0 0 24px rgba(74, 222, 128, 0.18);
+}
+
+.report-table-row:hover .text-slate-800,
+.report-table-row:hover .text-slate-700,
+.report-table-row:hover .text-slate-600 {
+  color: #173b2a;
+}
+
+html.dark .report-table-row:hover {
+  background: rgba(22, 101, 52, 0.35);
+}
+
+html.dark .report-table-row:hover .text-slate-800,
+html.dark .report-table-row:hover .text-slate-700,
+html.dark .report-table-row:hover .text-slate-600 {
+  color: #ecfdf5;
+}
+
+.agro-page-heading {
+  position: relative;
+  padding-left: 1rem;
+}
+
+.agro-page-heading::before {
+  position: absolute;
+  inset-block: 0.25rem;
+  left: 0;
+  width: 0.25rem;
+  border-radius: 999px;
+  background: linear-gradient(#22c55e, #84cc16);
+  content: "";
+}
+
+.auth-card-shell {
+  background: linear-gradient(135deg, #86efac 0%, #22c55e 48%, #bef264 100%);
+  box-shadow:
+    0 0 0 1px rgba(134, 239, 172, 0.28),
+    0 18px 45px rgba(22, 163, 74, 0.15),
+    0 0 28px rgba(74, 222, 128, 0.16);
+  transition: box-shadow 180ms ease, transform 180ms ease;
+}
+
+.auth-card-shell:hover {
+  box-shadow:
+    0 0 0 1px rgba(74, 222, 128, 0.55),
+    0 20px 48px rgba(22, 163, 74, 0.2),
+    0 0 34px rgba(74, 222, 128, 0.24);
+  transform: translateY(-2px);
+}
+
+html.dark .auth-card-inner {
+  background: #172b22;
+}

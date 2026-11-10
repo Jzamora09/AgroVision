@@ -186,7 +186,7 @@ export default function CropForm({
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-3xl bg-white p-8 shadow-lg"
+        className="agro-surface rounded-3xl p-8"
       >
         <div className="mb-8 flex items-center justify-between gap-4">
           <div>

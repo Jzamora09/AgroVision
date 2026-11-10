@@ -17,7 +17,7 @@ export default function CropGrid({
 }: CropGridProps) {
   if (loading) {
     return (
-      <div className="rounded-3xl bg-white p-12 text-center shadow-sm">
+      <div className="agro-surface rounded-3xl p-12 text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-green-100 border-t-green-600" />
 
         <p className="mt-4 text-slate-500">
@@ -29,7 +29,7 @@ export default function CropGrid({
 
   if (crops.length === 0) {
     return (
-      <div className="rounded-3xl bg-white p-12 text-center shadow-sm">
+      <div className="agro-surface rounded-3xl p-12 text-center">
         <div className="text-5xl">
           🌱
         </div>

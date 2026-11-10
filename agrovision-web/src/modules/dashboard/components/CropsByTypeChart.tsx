@@ -18,7 +18,7 @@ export default function CropsByTypeChart({
   data,
 }: Props) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="agro-surface rounded-3xl p-6">
       <div>
         <h2 className="text-xl font-bold text-slate-800">
           Cultivos por tipo

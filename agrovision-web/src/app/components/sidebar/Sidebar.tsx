@@ -3,15 +3,13 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 
 import SidebarHeader from "./SidebarHeader";
-import SidebarFooter from "./SidebarFooter";
 import SidebarItem from "./SidebarItem";
 import { sidebarItems } from "./sidebarData";
 
 import { useSidebar } from "../../context/SidebarContext";
 
 export default function Sidebar() {
-  const { collapsed, toggleSidebar } = useSidebar();
-
+const { collapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -51,9 +49,9 @@ export default function Sidebar() {
           border-r
           border-green-800
           bg-gradient-to-b
-          from-green-900
+          from-emerald-950
           via-green-800
-          to-green-900
+          to-lime-600
           shadow-2xl
           transition-transform
 

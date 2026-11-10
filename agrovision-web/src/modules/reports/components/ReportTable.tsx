@@ -52,7 +52,7 @@ export default function ReportTable({
   }
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+    <section className="agro-surface overflow-hidden rounded-3xl">
       <div className="border-b border-slate-200 p-6">
         <h2 className="text-xl font-bold text-slate-800">
           Resultados del reporte
@@ -104,7 +104,7 @@ export default function ReportTable({
             {crops.map((crop) => (
               <tr
                 key={crop.id}
-                className="transition hover:bg-slate-50"
+                className="report-table-row transition-colors hover:bg-emerald-50/70"
               >
                 <td className="px-6 py-4">
                   <p className="font-semibold text-slate-800">

@@ -15,37 +15,41 @@ import LoadingScreen from "@/components/common/LoadingScreen";
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => localStorage.getItem("agrovision-remembered-email") ?? "");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => Boolean(localStorage.getItem("agrovision-remembered-email")));
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleLogin = async () => {
+    setErrorMessage("");
+
     if (!email || !password) {
-      alert("Completa todos los campos.");
+      setErrorMessage("Completa tu correo y contraseña para continuar.");
       return;
     }
 
     try {
       setLoading(true);
 
-    await Promise.all([
-      loginUser({
-        email,
-        password,
-      }),
-      new Promise((resolve) => setTimeout(resolve, 1000)),
-    ]);
-
-navigate("/dashboard");
+      await Promise.all([
+        loginUser({ email, password }),
+        new Promise((resolve) => setTimeout(resolve, 1000)),
+      ]);
 
       navigate("/dashboard");
-    } catch (error: any) {
-      alert(error.message);
+      if (rememberMe) {
+        localStorage.setItem("agrovision-remembered-email", email);
+      } else {
+        localStorage.removeItem("agrovision-remembered-email");
+      }
+    } catch {
+      setErrorMessage("Correo o contraseña incorrectos. Verifica tus datos e inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
   };
-  if (loading) {
+  if (false) {
     return (
       <LoadingScreen
         message="Iniciando sesión..."
@@ -63,6 +67,12 @@ navigate("/dashboard");
 
           <div className="mt-8">
             <AuthCard>
+              {errorMessage && (
+                <div role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                  {errorMessage}
+                </div>
+              )}
+
               <h2 className="mb-2 text-3xl font-bold text-slate-800">
                 Bienvenido
               </h2>
@@ -76,19 +86,30 @@ navigate("/dashboard");
                 type="email"
                 placeholder="correo@ejemplo.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setErrorMessage("");
+                }}
               />
 
               <PasswordInput
                 label="Contraseña"
                 placeholder="********"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrorMessage("");
+                }}
               />
 
               <div className="mb-8 flex items-center justify-between">
                 <label className="flex items-center gap-2 text-sm text-slate-600">
-                  <input type="checkbox" />
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 accent-green-600"
+                  />
 
                   Recordarme
                 </label>

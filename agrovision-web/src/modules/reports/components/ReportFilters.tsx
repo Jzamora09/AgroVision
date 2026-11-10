@@ -40,7 +40,7 @@ export default function ReportFilters({
   };
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="agro-surface rounded-3xl p-6">
       <div className="mb-6 flex items-center gap-3">
         <div className="rounded-xl bg-green-100 p-3 text-green-700">
           <Filter size={21} />

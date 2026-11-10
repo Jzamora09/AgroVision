@@ -69,7 +69,7 @@ export default function CropsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
+      <div className="agro-page-heading">
         <h1 className="text-4xl font-bold text-slate-800">
           Gestión de cultivos 🌱
         </h1>

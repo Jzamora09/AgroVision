@@ -237,7 +237,7 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6 pb-12">
       {/* ENCABEZADO */}
-      <div>
+      <div className="agro-page-heading">
         <h1 className="text-2xl font-bold text-slate-900">
           Mi perfil
         </h1>
@@ -267,7 +267,7 @@ export default function ProfilePage() {
       )}
 
       {/* TARJETA DE PERFIL */}
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="agro-surface overflow-hidden rounded-2xl">
         <div className="h-28 bg-gradient-to-r from-emerald-950 via-emerald-800 to-emerald-600" />
 
         <div className="px-6 pb-7 sm:px-8">
@@ -347,7 +347,7 @@ export default function ProfilePage() {
       </section>
 
       {/* INFORMACIÓN PERSONAL */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <section className="agro-surface rounded-2xl p-6 sm:p-8">
         <div className="mb-7 flex items-center gap-3">
           <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
             <UserRound size={22} />
@@ -405,7 +405,7 @@ export default function ProfilePage() {
       </section>
 
       {/* SEGURIDAD */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <section className="agro-surface rounded-2xl p-6 sm:p-8">
         <div className="mb-6 flex items-center gap-3">
           <div className="rounded-xl bg-blue-50 p-3 text-blue-600">
             <ShieldCheck size={22} />

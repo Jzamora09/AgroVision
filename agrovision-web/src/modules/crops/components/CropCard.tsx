@@ -59,7 +59,7 @@ export default function CropCard({
   };
 
   return (
-    <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <article className="agro-surface overflow-hidden rounded-3xl transition duration-300 hover:-translate-y-1">
       <div className="p-6">
 
         {/* ENCABEZADO */}

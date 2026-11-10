@@ -71,7 +71,7 @@ export default function DetectionPage() {
 
   return (
     <div className="space-y-8">
-      <header>
+      <header className="agro-page-heading">
         <div className="flex items-center gap-3">
           <div className="rounded-2xl bg-green-100 p-3 text-green-700">
             <ScanSearch size={27} />
@@ -144,7 +144,7 @@ export default function DetectionPage() {
                 }
               />
             ) : (
-              <div className="flex min-h-[420px] items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
+              <div className="agro-surface flex min-h-[420px] items-center justify-center rounded-3xl border-dashed p-10 text-center">
                 <div>
                   <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-green-50 text-green-600">
                     <ScanSearch

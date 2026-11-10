@@ -1,5 +1,5 @@
 import { useState, type InputHTMLAttributes } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LockKeyhole } from "lucide-react";
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -20,6 +20,7 @@ export default function PasswordInput({
       </label>
 
       <div className="relative">
+        <LockKeyhole size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
           {...props}
           type={show ? "text" : "password"}
@@ -30,12 +31,13 @@ export default function PasswordInput({
             px-4
             py-3
             pr-12
+            pl-11
             outline-none
             transition
             ${
               error
                 ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200"
-                : "border-slate-300 focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                : "border-slate-300 focus:border-green-500 focus:ring-2 focus:ring-green-500/30"
             }
           `}
         />

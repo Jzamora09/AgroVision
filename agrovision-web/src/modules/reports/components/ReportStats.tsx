@@ -80,14 +80,14 @@ export default function ReportStats({
   };
 
   return (
-    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {cards.map((card) => {
         const Icon = card.icon;
 
         return (
           <article
             key={card.key}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            className="agro-surface rounded-2xl p-5"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
