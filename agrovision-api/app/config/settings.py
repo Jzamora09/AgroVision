@@ -19,7 +19,7 @@ class Settings:
 
     NVIDIA_MODEL = os.getenv(
         "NVIDIA_MODEL",
-        "meta/llama-3.2-90b-vision-instruct"
+        "nvidia/nemotron-3.5-super-vl-120b-a12b"
     )
 
     # Supabase

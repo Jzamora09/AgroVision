@@ -194,7 +194,7 @@ export default function DetectionUploader({
               className="animate-spin"
             />
 
-            Analizando con IA...
+            Analizando cultivo...
           </>
         ) : (
           <>
@@ -208,7 +208,7 @@ export default function DetectionUploader({
       {analyzing && (
         <div className="mt-5 rounded-2xl bg-blue-50 p-4 text-center">
           <p className="text-sm font-medium text-blue-700">
-            La inteligencia artificial está analizando la fotografía.
+            Se está analizando la fotografía.
           </p>
 
           <p className="mt-1 text-xs text-blue-500">

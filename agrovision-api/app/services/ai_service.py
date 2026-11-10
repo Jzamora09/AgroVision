@@ -7,6 +7,7 @@ import re
 
 from PIL import Image, ImageOps
 from openai import OpenAI
+from pydantic import ValidationError
 
 from app.config.settings import settings
 from app.schemas.detection_schema import PlantAnalysis
@@ -40,7 +41,7 @@ class AIService:
                 }
             ],
             temperature=0.2,
-            max_tokens=500
+            max_tokens=3000
         )
 
         if not response.choices:
@@ -70,7 +71,7 @@ class AIService:
                 image = ImageOps.exif_transpose(image)
                 image = image.convert("RGB")
 
-                # Mayor resolución para observar lesiones
+                # Mantener proporción y detalles visibles
                 image.thumbnail((1024, 1024))
 
                 buffer = io.BytesIO()
@@ -102,7 +103,6 @@ class AIService:
 
         content = content.strip()
 
-        # Eliminar bloque Markdown si existe
         if content.startswith("```"):
             lines = content.splitlines()
 
@@ -123,10 +123,10 @@ class AIService:
         except json.JSONDecodeError:
             pass
 
-        # Buscar JSON dentro de texto adicional
         decoder = json.JSONDecoder()
 
         for match in re.finditer(r"\{", content):
+
             try:
                 result, _ = decoder.raw_decode(
                     content[match.start():]
@@ -188,6 +188,7 @@ class AIService:
             cleaned = cleaned.lstrip("# ").strip()
 
             if ":" in cleaned:
+
                 label, value = cleaned.split(":", 1)
 
                 key = labels.get(
@@ -259,9 +260,14 @@ class AIService:
             result["confianza"]
         ).replace("%", "").strip()
 
-        result["confianza"] = int(
-            confidence_text
-        )
+        try:
+            result["confianza"] = int(
+                confidence_text
+            )
+        except ValueError as error:
+            raise ValueError(
+                "La confianza devuelta no es válida."
+            ) from error
 
         return result
 
@@ -271,9 +277,16 @@ class AIService:
 
     def validate_analysis(self, data: dict):
 
-        analysis = PlantAnalysis.model_validate(
-            data
-        )
+        try:
+            analysis = PlantAnalysis.model_validate(
+                data
+            )
+
+        except ValidationError as error:
+            raise ValueError(
+                "NVIDIA devolvió un análisis incompatible "
+                "con el esquema de AgroVision."
+            ) from error
 
         return analysis.model_dump()
 
@@ -287,12 +300,10 @@ class AIService:
         crop: dict
     ):
 
-        # 1. Preparar fotografía
         image_data = self.prepare_image(
             image_path
         )
 
-        # 2. Información contextual del cultivo
         nombre = crop.get("nombre") or "No especificado"
         tipo = crop.get("tipo") or "No especificado"
         variedad = crop.get("variedad") or "No especificada"
@@ -303,133 +314,157 @@ class AIService:
         )
 
         # --------------------------------------------------
-        # 3. PROMPT AGRÍCOLA DETALLADO
+        # PROMPT AGRÍCOLA EQUILIBRADO
         # --------------------------------------------------
 
         prompt = f"""
-You are an agricultural image analysis assistant
-specialized in plant health and phytopathology.
+You are an agricultural crop monitoring assistant
+specialized in visual plant health assessment.
 
-Analyze the photograph using the registered
-crop information as context.
+IMPORTANT CONTEXT:
+This task concerns agricultural plants, not human
+or veterinary medicine.
 
-CROP INFORMATION:
+Your purpose is to observe the photograph and
+provide an informative agricultural assessment,
+not a definitive diagnosis.
+
+REGISTERED CROP:
 Name: {nombre}
 Crop type: {tipo}
 Variety: {variedad}
 Description: {descripcion_cultivo}
 
-TASK:
+MAIN TASK:
 
-Examine the visible characteristics of the plant.
+First determine whether the plant appears healthy,
+shows visible signs of a health problem, or cannot
+be assessed reliably from the photograph.
 
-Identify visible symptoms such as:
-- Leaf spots
-- Chlorosis or yellowing
-- Necrosis
-- Mosaic patterns
-- Leaf deformation
-- Pest damage
-- Nutritional deficiency signs
-- Environmental stress
+Do not assume that every plant has a disease.
 
-When the visible evidence supports it,
-identify a possible disease compatible with
-the registered crop.
+HEALTHY PLANTS:
 
-For example, depending on the crop,
-possible conditions may include fungal,
-bacterial or viral plant diseases.
+If the plant has normal coloration, healthy-looking
+leaves and no evident signs of disease or pest damage:
 
-Do not select a disease merely because
-it appears in the examples.
+- Set estado to "Sana".
+- Set enfermedad to "Ninguna visible".
+- Set tipo_problema to "Ninguno visible".
+- Use an empty list for sintomas.
+- Describe the visible healthy characteristics.
+- Provide general recommendations for maintaining
+  plant health.
+- Do not invent symptoms or diseases.
 
-If a specific disease cannot be supported
-by visible evidence, use "No determinada".
+PLANTS WITH VISIBLE HEALTH PROBLEMS:
 
-Provide a detailed Spanish description of
-the observed visual characteristics.
+If the photograph shows visible alterations such as:
 
-Include useful general agricultural
-recommendations and preventive measures.
+- Brown or dark spots on leaves.
+- Yellowing or chlorosis.
+- Necrotic or damaged tissue.
+- Unusual leaf deformation.
+- Possible pest damage.
+- Abnormal coloration or texture.
+- Other visible signs of plant stress.
 
-Do not claim a definitive diagnosis.
-Do not invent symptoms.
-Do not infer hidden causes from the image.
+Then:
 
-Use the registered crop type as context,
-but do not assume it is visually correct.
+- Set estado to "Enferma" when evidence supports
+  a plant health problem.
+- Describe the visible symptoms clearly.
+- Mention a possible disease only if compatible
+  with the registered crop and visual evidence.
+- If the exact disease is uncertain, use
+  "No determinada".
+- Provide general recommendations and prevention.
 
-OUTPUT REQUIREMENTS:
+UNCERTAIN CASES:
+
+If the photograph is blurry, incomplete,
+poorly illuminated, or lacks sufficient evidence:
+
+- Set estado to "No concluyente".
+- Set enfermedad to "No determinada".
+- Explain why the assessment is uncertain.
+- Recommend obtaining a clearer photograph
+  or consulting an agricultural specialist.
+- Do not force a healthy or diseased classification.
+
+CROP COMPATIBILITY:
+
+Use the registered crop as context, but evaluate
+whether the photograph appears compatible with it.
+
+Set cultivo_coincide to true only when the
+photograph reasonably supports the registered crop.
+
+If the crop cannot be identified visually,
+do not claim that compatibility was confirmed.
+Explain the uncertainty in descripcion.
+
+GENERAL RULES:
+
+- Base observations on visible evidence.
+- Do not invent symptoms or hidden causes.
+- Do not present a definitive diagnosis.
+- Do not assume that every photograph is diseased.
+- Distinguish visible symptoms from possible causes.
+- Use Spanish for all descriptive values.
+- Provide useful and cautious recommendations.
+- Include preventive measures when appropriate.
+
+CONFIDENCE:
+
+Return an integer between 0 and 100 representing
+the model's subjective confidence in its visual
+assessment.
+
+Do not automatically return 0 or 100.
+Do not present confidence as validated accuracy.
+
+OUTPUT FORMAT:
 
 Return ONLY one valid JSON object.
-No Markdown.
-No introductory text.
-No explanations outside JSON.
+No Markdown, no headings, no additional explanations.
 
 Use exactly these nine keys:
 
-cultivo_coincide
-estado
-enfermedad
-tipo_problema
-confianza
-sintomas
-descripcion
-recomendaciones
-prevencion
+{{
+  "cultivo_coincide": true,
+  "estado": "Sana",
+  "enfermedad": "Ninguna visible",
+  "tipo_problema": "Ninguno visible",
+  "confianza": 0,
+  "sintomas": [],
+  "descripcion": "",
+  "recomendaciones": [],
+  "prevencion": []
+}}
 
-DATA TYPES:
+FIELD TYPES:
 
 cultivo_coincide: boolean
-estado: Spanish string
+estado: "Sana", "Enferma", or "No concluyente"
 enfermedad: Spanish string
 tipo_problema: Spanish string
 confianza: integer between 0 and 100
 sintomas: array of Spanish strings
-descripcion: Spanish string
+descripcion: detailed Spanish string
 recomendaciones: array of Spanish strings
 prevencion: array of Spanish strings
 
-STATUS RULES:
+The JSON above is only a format example.
+Do not copy its values automatically.
 
-- Use "Sana" if no visible health problem
-  is supported by the image.
-- Use "Enferma" when visible evidence
-  supports a plant health problem.
-- Use "No concluyente" when the image
-  is insufficient for classification.
-- If uncertain about the specific disease,
-  use "No determinada" for enfermedad.
-
-CONFIDENCE RULES:
-
-- Do not automatically return 0.
-- Do not automatically return 100.
-- The value must reflect the model's
-  estimated confidence in the visible assessment.
-- Do not present confidence as validated
-  diagnostic accuracy.
-
-DESCRIPTION RULES:
-
-- Describe the visible symptoms in detail.
-- Explain possible compatible conditions.
-- Mention uncertainty when appropriate.
-- Keep the response in Spanish.
-
-RECOMMENDATIONS:
-
-- Provide 3 to 5 practical general recommendations
-  when supported by the analysis.
-- Include preventive measures.
-- Recommend professional evaluation when necessary.
+Choose the values according to the photograph.
 
 Return valid JSON only.
 """
 
         # --------------------------------------------------
-        # 4. CONSULTAR NVIDIA NIM
+        # CONSULTAR NVIDIA NIM
         # --------------------------------------------------
 
         response = self.client.chat.completions.create(
@@ -456,7 +491,7 @@ Return valid JSON only.
         )
 
         # --------------------------------------------------
-        # 5. OBTENER RESPUESTA
+        # OBTENER RESPUESTA
         # --------------------------------------------------
 
         if not response.choices:
@@ -472,7 +507,7 @@ Return valid JSON only.
             )
 
         # --------------------------------------------------
-        # 6. INTERPRETAR RESPUESTA
+        # INTERPRETAR RESPUESTA
         # --------------------------------------------------
 
         try:
@@ -484,19 +519,23 @@ Return valid JSON only.
                 "NVIDIA devolvió JSON válido."
             )
 
+
         except ValueError:
 
             logger.warning(
-                "NVIDIA devolvió Markdown. "
-                "Intentando interpretación local."
+                "NVIDIA devolvió una respuesta no JSON."
             )
+
+            print("\n========== RESPUESTA NVIDIA ==========")
+            print(content[:3000])
+            print("=====================================\n")
 
             analysis_data = self.parse_markdown(
                 content
             )
 
         # --------------------------------------------------
-        # 7. VALIDAR RESULTADO
+        # VALIDAR RESULTADO
         # --------------------------------------------------
 
         analysis = self.validate_analysis(

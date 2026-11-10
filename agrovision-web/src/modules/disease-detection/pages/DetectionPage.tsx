@@ -83,7 +83,7 @@ export default function DetectionPage() {
             </h1>
 
             <p className="mt-1 text-slate-500">
-              Analiza fotografías de tus cultivos mediante inteligencia artificial.
+              Analiza fotografías de tus cultivos.
             </p>
           </div>
         </div>
