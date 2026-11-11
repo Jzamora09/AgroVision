@@ -115,9 +115,8 @@ class DetectionService:
 
                 descripcion = (
                     "El clasificador Random Forest identificó "
-                    "características visuales similares a las "
-                    "fotografías de tomate con tizón temprano "
-                    "utilizadas durante su entrenamiento. "
+                    "características visuales similares a las " 
+                    "fotografíasutilizadas durante su entrenamiento. "
                     "Esta clasificación es preliminar y "
                     "no confirma una enfermedad específica."
                 )
@@ -319,6 +318,50 @@ class DetectionService:
             image_url=image_path,
             analysis=analysis.model_dump()
         )
+
+
+        # --------------------------------------------------
+        # ACTUALIZAR ESTADO DEL CULTIVO
+        # --------------------------------------------------
+
+        # Solo actualizar con el análisis principal de NVIDIA.
+        # Random Forest no está validado para todos los cultivos.
+
+        if modelo_utilizado == "NVIDIA NIM":
+
+            estado_analisis = self.normalize_text(
+                analysis.estado
+            )
+
+            if estado_analisis == "enferma":
+
+                supabase_service.update_crop_status(
+                    crop_id=cultivo_id,
+                    estado="Con enfermedad"
+                )
+
+                logger.info(
+                    "Cultivo actualizado: Con enfermedad."
+                )
+
+            elif estado_analisis == "sana":
+
+                supabase_service.update_crop_status(
+                    crop_id=cultivo_id,
+                    estado="Activo"
+                )
+
+                logger.info(
+                    "Cultivo actualizado: Activo."
+                )
+
+            else:
+
+                logger.info(
+                    "Resultado no concluyente. "
+                    "Se conserva el estado anterior."
+                )
+
 
         # --------------------------------------------------
         # 6. CONSTRUIR INFORMACIÓN DEL CULTIVO

@@ -12,9 +12,12 @@ import {
 } from "lucide-react";
 
 import type { Crop } from "../types/crop";
+import type { CropAnalysis } from "../types/cropAnalysis";
 
 interface CropCardProps {
   crop: Crop;
+  analysis?: CropAnalysis;
+  loadingAnalysis?: boolean;
   onEdit: (crop: Crop) => void;
   onDelete: (crop: Crop) => void;
 }
@@ -39,8 +42,35 @@ const getStatusClasses = (estado: string) => {
   }
 };
 
+// ------------------------------------------
+// GENERAR DESCRIPCIÓN BREVE
+// ------------------------------------------
+
+const getShortDescription = (
+  description: string,
+  maxLength = 150
+) => {
+  const text = description.trim();
+
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  const shortened = text.slice(0, maxLength);
+  const lastSpace = shortened.lastIndexOf(" ");
+
+  return (
+    shortened.slice(
+      0,
+      lastSpace > 0 ? lastSpace : maxLength
+    ) + "..."
+  );
+};
+
 export default function CropCard({
   crop,
+  analysis,
+  loadingAnalysis = false,
   onEdit,
   onDelete,
 }: CropCardProps) {
@@ -58,9 +88,30 @@ export default function CropCard({
     navigate(`/deteccion?cultivo_id=${cultivoId}`);
   };
 
+  // ------------------------------------------
+  // INFORMACIÓN DEL ÚLTIMO ANÁLISIS
+  // ------------------------------------------
+
+  const estadoAnalisis = analysis?.estado
+    ?.trim()
+    .toLowerCase();
+
+  const isSick = estadoAnalisis === "enferma";
+  const isHealthy = estadoAnalisis === "sana";
+
+  const enfermedad = analysis?.enfermedad?.trim();
+
+  const enfermedadIdentificada =
+    enfermedad &&
+    ![
+      "no determinada",
+      "ninguna visible",
+      "no especificada",
+    ].includes(enfermedad.toLowerCase());
+
   return (
-    <article className="agro-surface overflow-hidden rounded-3xl transition duration-300 hover:-translate-y-1">
-      <div className="p-6">
+    <article className="agro-surface flex h-full flex-col overflow-hidden rounded-3xl transition duration-300 hover:-translate-y-1">
+      <div className="flex flex-1 flex-col p-6">
 
         {/* ENCABEZADO */}
         <div className="flex items-start justify-between gap-4">
@@ -94,7 +145,7 @@ export default function CropCard({
           <div className="flex items-center gap-3">
             <Leaf
               size={17}
-              className="text-green-600"
+              className="shrink-0 text-green-600"
             />
 
             <span>
@@ -106,7 +157,7 @@ export default function CropCard({
           <div className="flex items-center gap-3">
             <MapPin
               size={17}
-              className="text-green-600"
+              className="shrink-0 text-green-600"
             />
 
             <span>
@@ -118,7 +169,7 @@ export default function CropCard({
           <div className="flex items-center gap-3">
             <CalendarDays
               size={17}
-              className="text-green-600"
+              className="shrink-0 text-green-600"
             />
 
             <span>
@@ -130,7 +181,7 @@ export default function CropCard({
           <div className="flex items-center gap-3">
             <Ruler
               size={17}
-              className="text-green-600"
+              className="shrink-0 text-green-600"
             />
 
             <span>
@@ -140,32 +191,79 @@ export default function CropCard({
           </div>
         </div>
 
-        {/* DESCRIPCIÓN */}
+        {/* DESCRIPCIÓN DEL CULTIVO */}
         {crop.descripcion && (
           <p className="mt-5 border-t border-slate-100 pt-4 text-sm leading-6 text-slate-500">
             {crop.descripcion}
           </p>
         )}
 
-        {/* ANÁLISIS IA */}
+        {/* ANÁLISIS INTELIGENTE */}
         <div className="mt-5 rounded-2xl bg-slate-50 p-4">
           <div className="flex items-center gap-2 font-semibold text-slate-700">
             <Bot
               size={18}
               className="text-green-600"
             />
-
-            Análisis IA
+            Análisis Inteligente
           </div>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Consulta el módulo de detección para
-            analizar este cultivo.
-          </p>
+          {loadingAnalysis ? (
+            <p className="mt-2 text-sm text-slate-500">
+              Consultando análisis...
+            </p>
+          ) : !analysis ? (
+            <p className="mt-2 text-sm text-slate-500">
+              Consulta el módulo de detección para
+              analizar este cultivo.
+            </p>
+          ) : isSick ? (
+            <div className="mt-3 space-y-2">
+              <p className="text-sm font-semibold text-red-700">
+                {enfermedadIdentificada
+                  ? `Posible enfermedad: ${enfermedad}`
+                  : "Posible problema de salud"}
+              </p>
+
+              <p className="text-sm leading-6 text-slate-600">
+                {analysis.descripcion
+                  ? getShortDescription(
+                      analysis.descripcion
+                    )
+                  : "Se identificaron alteraciones visibles en la planta."}
+              </p>
+
+              <p className="text-xs italic text-slate-400">
+                Resultado orientativo del último análisis.
+              </p>
+            </div>
+          ) : isHealthy ? (
+            <div className="mt-3">
+              <p className="text-sm font-semibold text-green-700">
+                Planta aparentemente sana
+              </p>
+
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                No se identificaron señales evidentes
+                de enfermedad en el último análisis.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-3">
+              <p className="text-sm font-semibold text-amber-700">
+                Análisis no concluyente
+              </p>
+
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                No fue posible determinar el estado
+                de la planta con suficiente evidencia.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* BOTONES DE ACCIÓN */}
-        <div className="mt-6 grid grid-cols-[auto_auto_1fr] gap-3">
+        <div className="mt-auto grid grid-cols-[auto_auto_1fr] gap-3 pt-6">
 
           {/* EDITAR */}
           <button

@@ -1,10 +1,18 @@
+
 import CropCard from "./CropCard";
 
 import type { Crop } from "../types/crop";
+import type {
+  CropAnalysisMap,
+} from "../types/cropAnalysis";
 
 interface CropGridProps {
   crops: Crop[];
   loading: boolean;
+
+  analyses: CropAnalysisMap;
+  loadingAnalyses: boolean;
+
   onEdit: (crop: Crop) => void;
   onDelete: (crop: Crop) => void;
 }
@@ -12,9 +20,16 @@ interface CropGridProps {
 export default function CropGrid({
   crops,
   loading,
+  analyses,
+  loadingAnalyses,
   onEdit,
   onDelete,
 }: CropGridProps) {
+
+  // --------------------------------------------------
+  // ESTADO DE CARGA
+  // --------------------------------------------------
+
   if (loading) {
     return (
       <div className="agro-surface rounded-3xl p-12 text-center">
@@ -26,6 +41,10 @@ export default function CropGrid({
       </div>
     );
   }
+
+  // --------------------------------------------------
+  // SIN CULTIVOS REGISTRADOS
+  // --------------------------------------------------
 
   if (crops.length === 0) {
     return (
@@ -39,11 +58,16 @@ export default function CropGrid({
         </h3>
 
         <p className="mt-2 text-slate-500">
-          Registra tu primer cultivo utilizando el formulario.
+          Registra tu primer cultivo utilizando
+          el formulario.
         </p>
       </div>
     );
   }
+
+  // --------------------------------------------------
+  // MOSTRAR TARJETAS
+  // --------------------------------------------------
 
   return (
     <section>
@@ -61,14 +85,20 @@ export default function CropGrid({
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {crops.map((crop) => (
-          <CropCard
-            key={crop.id}
-            crop={crop}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        ))}
+        {crops.map((crop) => {
+          const analysis = analyses[String(crop.id)];
+
+          return (
+            <CropCard
+              key={crop.id}
+              crop={crop}
+              analysis={analysis}
+              loadingAnalysis={loadingAnalyses}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          );
+        })}
       </div>
     </section>
   );

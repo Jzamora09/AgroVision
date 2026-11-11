@@ -1,6 +1,12 @@
+
+import logging
+
 from supabase import create_client, Client
 
 from app.config.settings import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 class SupabaseService:
@@ -34,12 +40,11 @@ class SupabaseService:
 
             return response.data[0]
 
-        except Exception as error:
-            print("===== ERROR AL OBTENER CULTIVO =====")
-            print(error)
-            print("====================================")
-
-            raise error
+        except Exception:
+            logger.exception(
+                "Error al obtener el cultivo."
+            )
+            raise
 
     # --------------------------------------------------
     # GUARDAR ANÁLISIS DE ENFERMEDAD
@@ -76,17 +81,68 @@ class SupabaseService:
 
             if not response.data:
                 raise ValueError(
-                    "No fue posible guardar el análisis en Supabase."
+                    "No fue posible guardar el análisis."
                 )
 
             return response.data[0]
 
-        except Exception as error:
-            print("===== ERROR AL GUARDAR ANÁLISIS =====")
-            print(error)
-            print("=====================================")
+        except Exception:
+            logger.exception(
+                "Error al guardar el análisis."
+            )
+            raise
 
-            raise error
+    # --------------------------------------------------
+    # ACTUALIZAR ESTADO DEL CULTIVO
+    # --------------------------------------------------
+
+    def update_crop_status(
+        self,
+        crop_id: str,
+        estado: str
+    ):
+
+        # Estados permitidos en AgroVision
+        allowed_statuses = {
+            "Activo",
+            "Con enfermedad"
+        }
+
+        if estado not in allowed_statuses:
+            raise ValueError(
+                f"Estado de cultivo no permitido: {estado}"
+            )
+
+        try:
+            response = (
+                self.client
+                .table("crops")
+                .update({
+                    "estado": estado
+                })
+                .eq("id", crop_id)
+                .execute()
+            )
+
+            if not response.data:
+                raise ValueError(
+                    "No se encontró el cultivo "
+                    "o no fue posible actualizarlo."
+                )
+
+            logger.info(
+                "Estado del cultivo %s actualizado a %s",
+                crop_id,
+                estado
+            )
+
+            return response.data[0]
+
+        except Exception:
+            logger.exception(
+                "Error al actualizar estado del cultivo."
+            )
+            raise
 
 
 supabase_service = SupabaseService()
