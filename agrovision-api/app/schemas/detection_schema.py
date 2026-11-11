@@ -4,14 +4,12 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-# Información del cultivo
 class CropInfo(BaseModel):
     nombre: str
     tipo: str
     variedad: str | None = None
 
 
-# Resultado del análisis
 class PlantAnalysis(BaseModel):
     cultivo_coincide: bool
 
@@ -30,7 +28,6 @@ class PlantAnalysis(BaseModel):
     prevencion: list[str]
 
 
-# Respuesta completa del endpoint
 class DetectionResponse(BaseModel):
     success: bool
     cultivo_id: str
@@ -38,11 +35,10 @@ class DetectionResponse(BaseModel):
     image_path: str
     analysis: PlantAnalysis
 
-    # Identificación del modelo utilizado
     modelo_utilizado: Literal[
         "NVIDIA NIM",
-        "Random Forest"
+        "Random Forest",
+        "Información de referencia"
     ] = "NVIDIA NIM"
 
-    # Indica si se utilizó el respaldo
     respaldo_activado: bool = False

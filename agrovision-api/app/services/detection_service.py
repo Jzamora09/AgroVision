@@ -9,8 +9,8 @@ from pydantic import ValidationError
 from app.services.image_service import image_service
 from app.services.ai_service import ai_service
 from app.services.supabase_service import supabase_service
-from app.services.classification_service import (
-    classification_service
+from app.services.crop_knowledge_service import (
+    crop_knowledge_service
 )
 
 from app.schemas.detection_schema import (
@@ -25,17 +25,11 @@ logger = logging.getLogger(__name__)
 
 class DetectionService:
 
-    # --------------------------------------------------
-    # NORMALIZAR TEXTO
-    # --------------------------------------------------
-
     @staticmethod
     def normalize_text(value):
-        text = str(value or "").lower().strip()
-
         text = unicodedata.normalize(
             "NFKD",
-            text
+            str(value or "").lower().strip()
         )
 
         return "".join(
@@ -45,148 +39,73 @@ class DetectionService:
         )
 
     # --------------------------------------------------
-    # COMPROBAR SI EL CULTIVO ES TOMATE
+    # INFORMACIÓN AGRÍCOLA DE RESPALDO
     # --------------------------------------------------
 
-    def is_tomato(self, crop):
+    def knowledge_fallback(self, crop: dict):
 
-        nombre = self.normalize_text(
-            crop.get("nombre")
+        info = crop_knowledge_service.get_crop_information(
+            crop
         )
 
-        tipo = self.normalize_text(
-            crop.get("tipo")
-        )
-
-        words = f"{nombre} {tipo}".split()
-
-        return any(
-            word in words
-            for word in ("tomate", "tomato")
-        )
-
-    # --------------------------------------------------
-    # GENERAR RESPALDO RANDOM FOREST
-    # --------------------------------------------------
-
-    def random_forest_analysis(
-        self,
-        image_path: str,
-        crop: dict
-    ):
-
-        # Ejecutar modelo independientemente
-        # del tipo de cultivo.
-        result = classification_service.classify_image(
-            image_path
-        )
-
-        estado_modelo = str(
-            result["estado"]
-        ).strip().capitalize()
-
-        confianza_modelo = float(
-            result["confianza"]
-        )
-
-        # Comprobar si el cultivo pertenece
-        # a la especie utilizada en entrenamiento.
-        cultivo_validado = self.is_tomato(crop)
-
-        nombre_cultivo = (
+        nombre = (
             crop.get("nombre")
             or crop.get("tipo")
             or "cultivo"
         )
 
-        # --------------------------------------------------
-        # RESULTADO PARA TOMATE
-        # --------------------------------------------------
+        if info is None:
+            info = {
+                "tipo_problema": "No determinado",
+                "problemas": [],
+                "sintomas": [],
+                "descripcion": (
+                    "No existe una ficha agrícola específica "
+                    "para este cultivo."
+                ),
+                "recomendaciones": [
+                    "Inspeccionar visualmente la planta.",
+                    "Tomar fotografías claras.",
+                    "Consultar a un especialista agrícola."
+                ],
+                "prevencion": [
+                    "Mantener monitoreo periódico."
+                ]
+            }
 
-        if cultivo_validado:
+        problemas = info.get("problemas", [])
 
-            estado = estado_modelo
+        descripcion = (
 
-            confianza = int(
-                round(confianza_modelo)
+            f"Se presenta información agrícola de referencia. "
+            f"{info.get('descripcion', '')} "
+        )
+
+        if problemas:
+            descripcion += (
+                "Problemas que pueden presentarse "
+                "en este cultivo: "
+                + ", ".join(problemas)
+                + "."
             )
-
-            if estado == "Enferma":
-
-                descripcion = (
-                    "El clasificador Random Forest identificó "
-                    "características visuales similares a las " 
-                    "fotografíasutilizadas durante su entrenamiento. "
-                    "Esta clasificación es preliminar y "
-                    "no confirma una enfermedad específica."
-                )
-
-            else:
-
-                descripcion = (
-                    "El clasificador Random Forest identificó "
-                    "características similares a las fotografías "
-                    "de tomate sano utilizadas durante su "
-                    "entrenamiento. Este resultado es preliminar "
-                    "y no descarta otras enfermedades."
-                )
-
-        # --------------------------------------------------
-        # RESULTADO PARA OTROS CULTIVOS
-        # --------------------------------------------------
-
-        else:
-
-            # No presentar como diagnóstico una predicción
-            # fuera del dominio de entrenamiento.
-            estado = "No concluyente"
-            confianza = 0
-
-            descripcion = (
-                f"El análisis principal de NVIDIA no estuvo "
-                f"disponible para el cultivo {nombre_cultivo}. "
-                f"Se ejecutó el clasificador Random Forest "
-                f"como mecanismo de respaldo experimental. "
-                f"El modelo encontró mayor similitud con "
-                f"la categoría '{estado_modelo}' de su "
-                f"entrenamiento con fotografías de tomate. "
-                f"Su puntuación interna fue de "
-                f"{confianza_modelo:.2f} %. "
-                f"Este resultado no está validado para "
-                f"el cultivo seleccionado y no permite "
-                f"determinar su estado fitosanitario."
-            )
-
-        # --------------------------------------------------
-        # CONSTRUIR RESULTADO COMPATIBLE CON FRONTEND
-        # --------------------------------------------------
 
         return PlantAnalysis(
-            # Random Forest no comprueba la especie.
-            # No afirmamos compatibilidad visual.
             cultivo_coincide=False,
-
-            estado=estado,
+            estado="No concluyente",
             enfermedad="No determinada",
-            tipo_problema="No determinado",
-            confianza=confianza,
-            sintomas=[],
+            tipo_problema=info.get(
+                "tipo_problema",
+                "No determinado"
+            ),
+            confianza=0,
+            sintomas=info.get("sintomas", []),
             descripcion=descripcion,
-
-            recomendaciones=[
-                "Realizar una inspección visual del cultivo.",
-                "Tomar fotografías claras de las hojas "
-                "y de las zonas que presenten alteraciones.",
-                "Solicitar una evaluación agronómica "
-                "si se observan síntomas persistentes."
-            ],
-
-            prevencion=[
-                "Mantener un monitoreo periódico.",
-                "Registrar cambios visibles en las plantas.",
-                "Aplicar buenas prácticas de manejo "
-                "adecuadas al cultivo."
-            ]
+            recomendaciones=info.get(
+                "recomendaciones", []
+            ),
+            prevencion=info.get(
+                "prevencion", []
+            )
         )
 
     # --------------------------------------------------
@@ -199,10 +118,7 @@ class DetectionService:
         cultivo_id: str
     ):
 
-        # --------------------------------------------------
-        # 1. OBTENER CULTIVO DESDE SUPABASE
-        # --------------------------------------------------
-
+        # 1. Obtener cultivo
         crop = supabase_service.get_crop_by_id(
             cultivo_id
         )
@@ -213,24 +129,16 @@ class DetectionService:
                 detail="El cultivo seleccionado no existe."
             )
 
-        # --------------------------------------------------
-        # 2. GUARDAR FOTOGRAFÍA
-        # --------------------------------------------------
-
+        # 2. Guardar imagen
         image_path = image_service.save_image(
             image
         )
 
         modelo_utilizado = "NVIDIA NIM"
         respaldo_activado = False
-        analysis = None
 
-        # --------------------------------------------------
-        # 3. INTENTAR ANÁLISIS CON NVIDIA
-        # --------------------------------------------------
-
+        # 3. Intentar NVIDIA
         try:
-
             analysis_data = ai_service.analyze_image(
                 image_path=image_path,
                 crop=crop
@@ -241,22 +149,8 @@ class DetectionService:
             )
 
             logger.info(
-                "NVIDIA completó el análisis correctamente."
+                "Análisis NVIDIA completado."
             )
-
-            # Si NVIDIA no puede concluir,
-            # ejecutar el respaldo.
-            if (
-                self.normalize_text(analysis.estado)
-                == "no concluyente"
-            ):
-
-                logger.warning(
-                    "NVIDIA devolvió un resultado "
-                    "no concluyente."
-                )
-
-                analysis = None
 
         except (
             OpenAIError,
@@ -269,114 +163,51 @@ class DetectionService:
                 error
             )
 
-            analysis = None
+            analysis = self.knowledge_fallback(crop)
+            modelo_utilizado = "Información de referencia"
+            respaldo_activado = True
 
-        # --------------------------------------------------
-        # 4. ACTIVAR RESPALDO RANDOM FOREST
-        # --------------------------------------------------
-
-        if analysis is None:
-
-            logger.warning(
-                "Activando respaldo Random Forest."
+            logger.info(
+                "Ficha agrícola de respaldo activada."
             )
 
-            try:
+        # 4. Guardar solo análisis visuales reales
+        if not respaldo_activado:
+            supabase_service.save_disease_analysis(
+                crop_id=cultivo_id,
+                image_url=image_path,
+                analysis=analysis.model_dump()
+            )
 
-                analysis = self.random_forest_analysis(
-                    image_path=image_path,
-                    crop=crop
-                )
-
-                modelo_utilizado = "Random Forest"
-                respaldo_activado = True
-
-                logger.info(
-                    "Respaldo Random Forest ejecutado."
-                )
-
-            except Exception as error:
-
-                logger.exception(
-                    "Random Forest también falló."
-                )
-
-                raise HTTPException(
-                    status_code=503,
-                    detail=(
-                        "No fue posible completar el análisis "
-                        "con NVIDIA ni con Random Forest."
-                    )
-                ) from error
-
-        # --------------------------------------------------
-        # 5. GUARDAR RESULTADO EN SUPABASE
-        # --------------------------------------------------
-
-        supabase_service.save_disease_analysis(
-            crop_id=cultivo_id,
-            image_url=image_path,
-            analysis=analysis.model_dump()
-        )
-
-
-        # --------------------------------------------------
-        # ACTUALIZAR ESTADO DEL CULTIVO
-        # --------------------------------------------------
-
-        # Solo actualizar con el análisis principal de NVIDIA.
-        # Random Forest no está validado para todos los cultivos.
-
-        if modelo_utilizado == "NVIDIA NIM":
-
-            estado_analisis = self.normalize_text(
+        # 5. Actualizar estado solo con NVIDIA
+        if (
+            not respaldo_activado
+            and analysis.cultivo_coincide
+        ):
+            estado = self.normalize_text(
                 analysis.estado
             )
 
-            if estado_analisis == "enferma":
-
+            if estado == "enferma":
                 supabase_service.update_crop_status(
                     crop_id=cultivo_id,
                     estado="Con enfermedad"
                 )
 
-                logger.info(
-                    "Cultivo actualizado: Con enfermedad."
-                )
-
-            elif estado_analisis == "sana":
-
+            elif estado == "sana":
                 supabase_service.update_crop_status(
                     crop_id=cultivo_id,
                     estado="Activo"
                 )
 
-                logger.info(
-                    "Cultivo actualizado: Activo."
-                )
-
-            else:
-
-                logger.info(
-                    "Resultado no concluyente. "
-                    "Se conserva el estado anterior."
-                )
-
-
-        # --------------------------------------------------
-        # 6. CONSTRUIR INFORMACIÓN DEL CULTIVO
-        # --------------------------------------------------
-
+        # 6. Información del cultivo
         crop_info = CropInfo(
             nombre=crop["nombre"],
             tipo=crop["tipo"],
             variedad=crop.get("variedad")
         )
 
-        # --------------------------------------------------
-        # 7. DEVOLVER RESPUESTA
-        # --------------------------------------------------
-
+        # 7. Respuesta
         return DetectionResponse(
             success=True,
             cultivo_id=cultivo_id,
